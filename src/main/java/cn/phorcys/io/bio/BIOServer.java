@@ -1,9 +1,11 @@
 package cn.phorcys.io.bio;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.StandardCharsets;
 
 public class BIOServer {
     public static void main(String[] args) {
@@ -26,9 +28,15 @@ public class BIOServer {
     private static void handle(Socket socket) {
         byte[] bytes = new byte[1024];
         try {
-            int len = socket.getInputStream().read(bytes);
-            socket.getOutputStream().write(bytes, 0, len);
-            socket.getOutputStream().flush();
+            int len;
+            while ((len = socket.getInputStream().read(bytes)) != -1) {
+                String received = new String(bytes, 0, len, StandardCharsets.UTF_8);
+                String response = "返回: " + received;
+
+                OutputStream outputStream = socket.getOutputStream();
+                outputStream.write(response.getBytes(StandardCharsets.UTF_8));
+                outputStream.flush();
+            }
         } catch (IOException e) {
             e.printStackTrace();
             try {
